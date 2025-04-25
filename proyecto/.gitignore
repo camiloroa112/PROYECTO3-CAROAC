@@ -1,0 +1,12 @@
+proyecto/app/__pycache__/
+proyecto/app/tests/__pycache__/
+proyecto/app/models/__pycache__/
+proyecto/app/controllers/__pycache__/
+.venv/__pycache__/
+./venv/
+# Ignorar el entorno virtual
+.venv/
+
+# Ignorar los archivos de bytecode de Python
+__pycache__/
+*.pyc

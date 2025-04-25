@@ -1,0 +1,117 @@
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+/* Body */
+body {
+    font-family: "Pacifico", cursive, sans-serif;
+    background-color: #D0F4E6;
+    font-weight: 400;
+}
+
+.login {
+    font-family: "Pacifico", cursive, sans-serif;
+}
+
+/* Navbar */
+.navbar a img {
+    width: 25px;
+    height: 25px;
+}
+
+.menu-nonadmin .navegacion, .menu .navegacion {
+    position: relative;
+}
+
+.menu-nonadmin .navegacion .logout, .menu .navegacion .logout {
+    position: absolute;
+    list-style-type: none;
+    top: 10px;
+    right: 10px;
+}
+
+/* Helados Disponibles */
+.helados-disponibles h1 {
+    font-size: 24px;
+    text-align: center;
+    background-color: #B2E0D8;
+    border: 1px solid cadetblue;
+}
+
+.helados-disponibles h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 18px;
+    text-align: center;
+    background-color: #B2E0D8;
+    border: 1px solid cadetblue;
+}
+
+.helados-disponibles .img-background {
+    background-color: #E6D8D2;
+    border: 1px solid burlywood;
+}
+
+.helados-disponibles .precio {
+    background-color: #FDF5C9;
+    border: 1px solid darkkhaki;
+    font-size: 1.2rem;
+    color: #A9957B;
+    margin: 0;
+}
+
+.helados-disponibles .ingredientes {
+    background-color: rgb(247, 237, 212);
+    border: 1px solid #C2B8A1;
+}
+
+.helados-disponibles .lista-ingredientes {
+    color: #AF9659;
+}
+
+.helados-disponibles .ingredientes {
+    font-size: 0.88rem;
+}
+
+/* Materiales */
+.ingredientes .material {
+    color: #8D663F;
+}
+
+/* Login */
+.login {
+    background-color: #B2E0D8;
+}
+
+.login form {
+    top: 50%;
+    left: 50%;
+    max-width: 500px;
+    position: absolute;
+    background-color: #A9957B;
+    transform: translate(-50%, -50%);
+}
+
+.login form img {
+    width: 40px;
+    height: 40px;
+    margin-top: 8px;
+}
+
+/* No Autorizado */
+.non-authorized {
+    top: 50%;
+    left: 50%;
+    max-width: 500px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.non-authorized button {
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.non-authorized a {
+    color: white;
+    text-decoration: none;
+}
