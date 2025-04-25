@@ -1,5 +1,4 @@
 # 1st Party Libraries
-from flask import jsonify
 from app.models.base import Base
 from app.models.copa import Copa
 from app.models.malteada import Malteada
@@ -71,7 +70,7 @@ class Heladeria():
         
         # Si el producto no está disponible, retorna False
         if producto_a_vender is None:
-            return jsonify({'error': 'Producto no encontrado o inventario insuficiente'}), 404
+            return False
 
         
         # Verificar si los ingredientes están disponibles
@@ -80,22 +79,15 @@ class Heladeria():
         # Búsqueda de ingrediente en ingredientes
         for ingrediente in ingredientes:
 
-            # # Comprobación de existencias para ingredientes complemento
-            # if isinstance(ingrediente, Complemento):
-            #     if ingrediente.get_inventario() < 1:
-            #         raise ValueError(f"¡Oh no! Nos hemos quedado sin {ingrediente.get_nombre()}")
+            # Comprobación de existencias para ingredientes complemento
+            if isinstance(ingrediente, Complemento):
+                if ingrediente.get_inventario() < 1:
+                    raise ValueError(f"¡Oh no! Nos hemos quedado sin {ingrediente.get_nombre()}")
                 
-            # # Comprobación de existencias para ingredientes Base
-            # elif isinstance(ingrediente, Base):
-            #     if ingrediente.get_inventario() < 0.2:
-            #         raise ValueError(f"¡Oh no! Nos hemos quedado sin {ingrediente.get_nombre()}")
-            for ingrediente in ingredientes:
-                if isinstance(ingrediente, Complemento):
-                    if ingrediente.get_inventario() < 1:
-                        return jsonify({'error': f"Nos hemos quedado sin {ingrediente.get_nombre()}"})
-                elif isinstance(ingrediente, Base):
-                    if ingrediente.get_inventario() < 0.2:
-                        return jsonify({'error': f"Nos hemos quedado sin {ingrediente.get_nombre()}"})
+            # Comprobación de existencias para ingredientes Base
+            elif isinstance(ingrediente, Base):
+                if ingrediente.get_inventario() < 0.2:
+                    raise ValueError(f"¡Oh no! Nos hemos quedado sin {ingrediente.get_nombre()}")
 
         
         # Si todos los ingredientes están disponibles, restamos las cantidades de inventario
