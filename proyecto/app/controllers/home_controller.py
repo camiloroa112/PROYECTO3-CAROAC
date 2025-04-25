@@ -6,6 +6,7 @@ from app.models.productos import productos
 from app.models.ingredientes import ingredientes
 
 # 3rd Party Libraries
+from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from app.config.auth import login_manager
 from flask_login import login_user, logout_user, login_required, current_user
@@ -46,45 +47,54 @@ def login():
 
             # Inspecciona si este es admin o no
             if user.is_admin:
-                return redirect(url_for('home.index')), 200
+                return redirect(url_for('home.admin'))
             
             # En caso de no ser admin pero si empleado
             elif user.is_employee:
-                return redirect(url_for('home.comprador')), 200
+                return redirect(url_for('home.empleado'))
             
             # Para un usuario sin credenciales validas
             else:
-                return redirect(url_for('home.no_autorizado')), 401
+                return redirect(url_for('home.cliente'))
             
         # Informe de credenciales incorrectas
         else:
             flash("Incorrect credentials!")
-            return redirect(url_for('home.no_autorizado')), 401
+            return redirect(url_for('home.no_autorizado'))
 
 @home_blueprint.route('/logout')
 def logout():
     # Modulo para desloguear a un usuario
     logout_user()
-    return redirect(url_for('home.login')), 200
+    return redirect(url_for('home.login'))
 
-@home_blueprint.route('/index')
+@home_blueprint.route('/admin')
 @login_required
-def index():
+def admin():
     
     # Trayendo resultados del controlador
     productos_ingredientes = obtener_productos(productos, ingredientes, db)
     
     # Displaying results in index.html
-    return render_template('index.html', heladeria = productos_ingredientes, user = current_user)
+    return render_template('admin.html', heladeria = productos_ingredientes, user = current_user)
 
-@home_blueprint.route('/comprador')
+@home_blueprint.route('/empleado')
 @login_required
-def comprador():
+def empleado():
     # Trayendo resultados del controlador
     productos_ingredientes = obtener_productos(productos, ingredientes, db)
 
     # Redirección a usuarios no administradores del sitio web
-    return render_template('comprador.html', heladeria = productos_ingredientes, user = current_user)
+    return render_template('empleado.html', heladeria = productos_ingredientes, user = current_user)
+
+@home_blueprint.route('/cliente')
+@login_required
+def cliente():
+    # Trayendo resultados del controlador
+    productos_ingredientes = obtener_productos(productos, ingredientes, db)
+
+    # Redirección a usuarios no administradores del sitio web
+    return render_template('cliente.html', heladeria = productos_ingredientes, user = current_user)
 
 @home_blueprint.route('/no-autorizado')
 def no_autorizado():
@@ -118,7 +128,8 @@ def obtener_productos(productos, ingredientes, db) -> list[tuple]:
         ingrediente3.precio.label('precio3'),
         ingrediente1.nombre.label('ingrediente1'),
         ingrediente2.nombre.label('ingrediente2'),
-        ingrediente3.nombre.label('ingrediente3')
+        ingrediente3.nombre.label('ingrediente3'),
+        func.round(productos.precio_publico - (ingrediente1.precio + ingrediente2.precio + ingrediente3.precio), 2).label('rentabilidad')
     ).join(ingrediente1, productos.ingrediente1_id == ingrediente1.id
     ).join(ingrediente2, productos.ingrediente2_id == ingrediente2.id
     ).join(ingrediente3, productos.ingrediente3_id == ingrediente3.id).all()

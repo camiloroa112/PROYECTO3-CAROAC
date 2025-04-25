@@ -1,17 +1,17 @@
 # 1st Party Libraries
 from app.config.db import db
 from app.models.base import Base
-from app.models.copa import Copa
-from app.models.malteada import Malteada
 from app.models.productos import productos
 from app.models.heladeria import Heladeria
 from app.models.complemento import Complemento
 from app.models.ingrediente import Ingrediente
 from app.models.ingredientes import ingredientes
+from app.models.obtener_producto import obtener_producto
 
 # 3rd Party Libraries
 from sqlalchemy.orm import aliased
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, jsonify
+from flask_login import login_required
 
 # Instanciando el Blueprint de la API
 api = Blueprint('api', __name__)
@@ -35,6 +35,7 @@ def obtener_productos():
 
 # Consultar producto por su ID
 @api.route('/api/productos/<int:producto_id>', methods = ['GET'])
+@login_required
 def obtener_producto_por_id(producto_id):
     
     # Obteniendo los productos por ID
@@ -45,6 +46,7 @@ def obtener_producto_por_id(producto_id):
 
 # Consultando producto por nombre del producto
 @api.route('/api/productos/nombre/<string:nombre>', methods = ['GET'])
+@login_required
 def obtener_producto_por_nombre(nombre):
     
     # Filtrando por el nombre
@@ -60,41 +62,11 @@ def obtener_producto_por_nombre(nombre):
     
 # Calcular calorias por ID Producto
 @api.route('/api/productos/<int:producto_id>/calorias', methods = ['GET'])
+@login_required
 def obtener_calorias(producto_id):
     
-    # Creando alias para los tres diferentes ingredientes que conforman a un producto
-    i1_alias = aliased(ingredientes)
-    i2_alias = aliased(ingredientes)
-    i3_alias = aliased(ingredientes)
-
-    # JOIN producto con ingredientes
-    resultado = db.session.query(productos, i1_alias, i2_alias, i3_alias
-    ).join(i1_alias, productos.ingrediente1_id == i1_alias.id).join(i2_alias, productos.ingrediente2_id == i2_alias.id
-    ).join(i3_alias, productos.ingrediente3_id == i3_alias.id).filter(productos.id == producto_id).first()
-
-    # En caso de que no se encuentre el resultado
-    if resultado is None:
-        return jsonify({'error': 'Producto no encontrado'}), 404
-
-    # Extraer tupla de la consulta
-    producto_obtenido, ingrediente__1, ingrediente__2, ingrediente__3 = resultado
-
-    # Instanciar Ingredientes
-    ingrediente1 = Ingrediente(precio = ingrediente__1.precio, calorias = ingrediente__1.calorias, nombre = ingrediente__1.nombre, es_vegetariano = ingrediente__1.es_vegetariano, inventario = ingrediente__1.inventario)
-    ingrediente2 = Ingrediente(precio = ingrediente__2.precio, calorias = ingrediente__2.calorias, nombre = ingrediente__2.nombre, es_vegetariano = ingrediente__2.es_vegetariano, inventario = ingrediente__2.inventario)
-    ingrediente3 = Ingrediente(precio = ingrediente__3.precio, calorias = ingrediente__3.calorias, nombre = ingrediente__3.nombre, es_vegetariano = ingrediente__3.es_vegetariano, inventario = ingrediente__3.inventario)
-
-    # Determinar el producto por si tiene un vaso para las copas
-    if producto_obtenido.tipo_vaso:
-        producto = Copa(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, tipo_vaso = producto_obtenido.tipo_vaso)
-    
-    # Determinar el producto por si tiene un volumen para las malteadas
-    elif producto_obtenido.volumen:
-        producto = Malteada(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, volumen = producto_obtenido.volumen)
-    
-    # En caso de un producto no encontrado
-    else:
-        return jsonify({'error': 'Tipo de producto no reconocido'}), 400
+    # Obteniendo producto
+    producto, producto_obtenido = obtener_producto(producto_id)
 
     # Calcular calorías
     calorias = producto.calcular_calorias()
@@ -106,85 +78,23 @@ def obtener_calorias(producto_id):
 @api.route('/api/productos/<int:producto_id>/rentabilidad', methods = ['GET'])
 def obtener_rentabilidad(producto_id):
     
-    # Creando alias para los tres diferentes ingredientes que conforman a un producto
-    i1_alias = aliased(ingredientes)
-    i2_alias = aliased(ingredientes)
-    i3_alias = aliased(ingredientes)
+    # Obteniendo producto
+    producto, producto_obtenido = obtener_producto(producto_id)
 
-    # JOIN producto con ingredientes
-    resultado = db.session.query(productos, i1_alias, i2_alias, i3_alias
-    ).join(i1_alias, productos.ingrediente1_id == i1_alias.id).join(i2_alias, productos.ingrediente2_id == i2_alias.id
-    ).join(i3_alias, productos.ingrediente3_id == i3_alias.id).filter(productos.id == producto_id).first()
-
-    # En caso de que no se encuentre el resultado
-    if resultado is None:
-        return jsonify({'error': 'Producto no encontrado'}), 404
-
-    # Extraer tupla de la consulta
-    producto_obtenido, ingrediente__1, ingrediente__2, ingrediente__3 = resultado
-
-    # Instanciar Ingredientes
-    ingrediente1 = Ingrediente(precio = ingrediente__1.precio, calorias = ingrediente__1.calorias, nombre = ingrediente__1.nombre, es_vegetariano = ingrediente__1.es_vegetariano, inventario = ingrediente__1.inventario)
-    ingrediente2 = Ingrediente(precio = ingrediente__2.precio, calorias = ingrediente__2.calorias, nombre = ingrediente__2.nombre, es_vegetariano = ingrediente__2.es_vegetariano, inventario = ingrediente__2.inventario)
-    ingrediente3 = Ingrediente(precio = ingrediente__3.precio, calorias = ingrediente__3.calorias, nombre = ingrediente__3.nombre, es_vegetariano = ingrediente__3.es_vegetariano, inventario = ingrediente__3.inventario)
-
-    # Determinar el producto por si tiene un vaso para las copas
-    if producto_obtenido.tipo_vaso:
-        producto = Copa(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, tipo_vaso = producto_obtenido.tipo_vaso)
-    
-    # Determinar el producto por si tiene un volumen para las malteadas
-    elif producto_obtenido.volumen:
-        producto = Malteada(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, volumen = producto_obtenido.volumen)
-    
-    # En caso de un producto no encontrado
-    else:
-        return jsonify({'error': 'Tipo de producto no reconocido'}), 400
-
-    # Calcular calorías
+    # Calcular rentabilidad
     rentabilidad = producto.calcular_rentabilidad()
 
     # Retornando JSON
     return jsonify({'id': producto_obtenido.id, 'producto': producto_obtenido.nombre, 'rentabilidad': rentabilidad}), 200
 
-# Calcular rentabilidad por ID Producto
+# Calcular costo por ID Producto
 @api.route('/api/productos/<int:producto_id>/costo_produccion', methods = ['GET'])
 def obtener_costo(producto_id):
     
-    # Creando alias para los tres diferentes ingredientes que conforman a un producto
-    i1_alias = aliased(ingredientes)
-    i2_alias = aliased(ingredientes)
-    i3_alias = aliased(ingredientes)
+    # Obteniendo producto
+    producto, producto_obtenido = obtener_producto(producto_id)
 
-    # JOIN producto con ingredientes
-    resultado = db.session.query(productos, i1_alias, i2_alias, i3_alias
-    ).join(i1_alias, productos.ingrediente1_id == i1_alias.id).join(i2_alias, productos.ingrediente2_id == i2_alias.id
-    ).join(i3_alias, productos.ingrediente3_id == i3_alias.id).filter(productos.id == producto_id).first()
-
-    # En caso de que no se encuentre el resultado
-    if resultado is None:
-        return jsonify({'error': 'Producto no encontrado'}), 404
-
-    # Extraer tupla de la consulta
-    producto_obtenido, ingrediente__1, ingrediente__2, ingrediente__3 = resultado
-
-    # Instanciar Ingredientes
-    ingrediente1 = Ingrediente(precio = ingrediente__1.precio, calorias = ingrediente__1.calorias, nombre = ingrediente__1.nombre, es_vegetariano = ingrediente__1.es_vegetariano, inventario = ingrediente__1.inventario)
-    ingrediente2 = Ingrediente(precio = ingrediente__2.precio, calorias = ingrediente__2.calorias, nombre = ingrediente__2.nombre, es_vegetariano = ingrediente__2.es_vegetariano, inventario = ingrediente__2.inventario)
-    ingrediente3 = Ingrediente(precio = ingrediente__3.precio, calorias = ingrediente__3.calorias, nombre = ingrediente__3.nombre, es_vegetariano = ingrediente__3.es_vegetariano, inventario = ingrediente__3.inventario)
-
-    # Determinar el producto por si tiene un vaso para las copas
-    if producto_obtenido.tipo_vaso:
-        producto = Copa(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, tipo_vaso = producto_obtenido.tipo_vaso)
-    
-    # Determinar el producto por si tiene un volumen para las malteadas
-    elif producto_obtenido.volumen:
-        producto = Malteada(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, volumen = producto_obtenido.volumen)
-    
-    # En caso de un producto no encontrado
-    else:
-        return jsonify({'error': 'Tipo de producto no reconocido'}), 400
-
-    # Calcular calorías
+    # Calcular costo del producto
     costo_produccion = producto.calcular_costo()
 
     # Retornando JSON
@@ -201,42 +111,15 @@ def vender_producto(producto_id):
     if producto is None:
         return jsonify({'error': 'Producto no encontrado'}), 404
     
-    # Creando alias para los tres diferentes ingredientes que conforman a un producto
-    i1_alias = aliased(ingredientes)
-    i2_alias = aliased(ingredientes)
-    i3_alias = aliased(ingredientes)
-
-    # JOIN producto con ingredientes
-    resultado = db.session.query(productos, i1_alias, i2_alias, i3_alias
-    ).join(i1_alias, productos.ingrediente1_id == i1_alias.id).join(i2_alias, productos.ingrediente2_id == i2_alias.id
-    ).join(i3_alias, productos.ingrediente3_id == i3_alias.id).filter(productos.id == producto_id).first()
-
-    # En caso de que no se encuentre el resultado
-    if resultado is None:
-        return jsonify({'error': 'Producto no encontrado'}), 404
-
-    # Extraer tupla de la consulta
-    producto_obtenido, ingrediente__1, ingrediente__2, ingrediente__3 = resultado
-
-    # Instanciar Ingredientes
-    ingrediente1 = Ingrediente(precio = ingrediente__1.precio, calorias = ingrediente__1.calorias, nombre = ingrediente__1.nombre, es_vegetariano = ingrediente__1.es_vegetariano, inventario = ingrediente__1.inventario)
-    ingrediente2 = Ingrediente(precio = ingrediente__2.precio, calorias = ingrediente__2.calorias, nombre = ingrediente__2.nombre, es_vegetariano = ingrediente__2.es_vegetariano, inventario = ingrediente__2.inventario)
-    ingrediente3 = Ingrediente(precio = ingrediente__3.precio, calorias = ingrediente__3.calorias, nombre = ingrediente__3.nombre, es_vegetariano = ingrediente__3.es_vegetariano, inventario = ingrediente__3.inventario)
-
-    # Determinar el producto por si tiene un vaso para las copas
-    if producto_obtenido.tipo_vaso:
-        producto = Copa(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, tipo_vaso = producto_obtenido.tipo_vaso)
-    
-    # Determinar el producto por si tiene un volumen para las malteadas
-    elif producto_obtenido.volumen:
-        producto = Malteada(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, volumen = producto_obtenido.volumen)
+    # Obteniendo producto
+    producto, producto_obtenido = obtener_producto(producto_id)
     
     # Instanciando Heladería
     heladeria = Heladeria([producto])
     
     # Confirmación de venta exitosa
-    if heladeria.vender(producto.nombre):
-        return jsonify({'mensaje': 'Venta exitosa'}), 200
+    if heladeria.vender(producto_obtenido.nombre):
+        return jsonify({'id': producto_obtenido.id, 'mensaje': 'Venta exitosa', 'producto': producto_obtenido.nombre}), 200
     
     # En caso de algún error en la venta
     else:
@@ -247,7 +130,7 @@ def vender_producto(producto_id):
 def obtener_todos_los_ingredientes():
     
     # Consultando todos los ingredientes disponibles en la base
-    ingredientes_lista = Ingrediente.query.all()
+    ingredientes_lista = ingredientes.query.all()
 
     # Introduciendo los ingredientes en una lista
     ingredientes_serializados = [{'id': ingrediente.id, 'nombre': ingrediente.nombre, 'calorias': ingrediente.calorias, 'precio': ingrediente.precio} for ingrediente in ingredientes_lista]
@@ -260,7 +143,7 @@ def obtener_todos_los_ingredientes():
 def obtener_ingrediente_por_id(ingrediente_id):
     
     # Realizando búsqueda del ingrediente
-    ingrediente = Ingrediente.query.get(ingrediente_id)
+    ingrediente = ingredientes.query.get(ingrediente_id)
     
     # Retornando mensaje de error en caso de busqueda no exitosa
     if ingrediente is None:
@@ -275,7 +158,7 @@ def obtener_ingrediente_por_id(ingrediente_id):
 def obtener_ingrediente_por_nombre(nombre):
     
     # Obteniendo ingrediente por su nombre
-    ingrediente = Ingrediente.query.filter_by(nombre = nombre).first()
+    ingrediente = ingredientes.query.filter_by(nombre = nombre).first()
     
     # Retornando mensaje de error en caso de busqueda no exitosa
     if ingrediente is None:
@@ -289,7 +172,7 @@ def obtener_ingrediente_por_nombre(nombre):
 def obtener_sano_por_id(ingrediente_id):
     
     # Obteniendo ingrediente por su nombre
-    ingrediente = Ingrediente.query.get(ingrediente_id)
+    ingrediente = ingredientes.query.get(ingrediente_id)
     
     # Retornando mensaje de error en caso de busqueda no exitosa
     if ingrediente is None:
@@ -323,18 +206,6 @@ def reabastecer_producto(producto_id):
     ingrediente1 = Ingrediente(precio = ingrediente__1.precio, calorias = ingrediente__1.calorias, nombre = ingrediente__1.nombre, es_vegetariano = ingrediente__1.es_vegetariano, inventario = ingrediente__1.inventario)
     ingrediente2 = Ingrediente(precio = ingrediente__2.precio, calorias = ingrediente__2.calorias, nombre = ingrediente__2.nombre, es_vegetariano = ingrediente__2.es_vegetariano, inventario = ingrediente__2.inventario)
     ingrediente3 = Ingrediente(precio = ingrediente__3.precio, calorias = ingrediente__3.calorias, nombre = ingrediente__3.nombre, es_vegetariano = ingrediente__3.es_vegetariano, inventario = ingrediente__3.inventario)
-
-    # Determinar el producto por si tiene un vaso para las copas
-    if producto_obtenido.tipo_vaso:
-        producto = Copa(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, tipo_vaso = producto_obtenido.tipo_vaso)
-    
-    # Determinar el producto por si tiene un volumen para las malteadas
-    elif producto_obtenido.volumen:
-        producto = Malteada(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, volumen = producto_obtenido.volumen)
-    
-    # En caso de un producto no encontrado
-    else:
-        return jsonify({'error': 'Tipo de producto no reconocido'}), 400
 
     # Reabastecer los ingredientes de la copa o malteada
     ingredientes = [ingrediente1, ingrediente2, ingrediente3]
@@ -390,18 +261,6 @@ def renovar_inventario(producto_id):
     ingrediente1 = Ingrediente(precio = ingrediente__1.precio, calorias = ingrediente__1.calorias, nombre = ingrediente__1.nombre, es_vegetariano = ingrediente__1.es_vegetariano, inventario = ingrediente__1.inventario)
     ingrediente2 = Ingrediente(precio = ingrediente__2.precio, calorias = ingrediente__2.calorias, nombre = ingrediente__2.nombre, es_vegetariano = ingrediente__2.es_vegetariano, inventario = ingrediente__2.inventario)
     ingrediente3 = Ingrediente(precio = ingrediente__3.precio, calorias = ingrediente__3.calorias, nombre = ingrediente__3.nombre, es_vegetariano = ingrediente__3.es_vegetariano, inventario = ingrediente__3.inventario)
-
-    # Determinar el producto por si tiene un vaso para las copas
-    if producto_obtenido.tipo_vaso:
-        producto = Copa(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, tipo_vaso = producto_obtenido.tipo_vaso)
-    
-    # Determinar el producto por si tiene un volumen para las malteadas
-    elif producto_obtenido.volumen:
-        producto = Malteada(nombre = producto_obtenido.nombre, precio_publico = producto_obtenido.precio_publico, ingrediente_1 = ingrediente1, ingrediente_2 = ingrediente2, ingrediente_3 = ingrediente3, volumen = producto_obtenido.volumen)
-    
-    # En caso de un producto no encontrado
-    else:
-        return jsonify({'error': 'Tipo de producto no reconocido'}), 400
 
     # Reabastecer los ingredientes de la copa o malteada
     ingredientes = [ingrediente1, ingrediente2, ingrediente3]

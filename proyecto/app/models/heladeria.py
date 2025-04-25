@@ -89,7 +89,6 @@ class Heladeria():
                 if ingrediente.get_inventario() < 0.2:
                     raise ValueError(f"¡Oh no! Nos hemos quedado sin {ingrediente.get_nombre()}")
 
-        
         # Si todos los ingredientes están disponibles, restamos las cantidades de inventario
         for ingrediente in ingredientes:
 

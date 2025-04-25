@@ -12,3 +12,14 @@ class Usuario(UserMixin, db.Model):
     password = db.Column(db.String(255), nullable = False)
     is_admin = db.Column(db.Integer, nullable = False)
     is_employee = db.Column(db.Integer, nullable = False)
+
+    @property
+    def rol(self):
+        if self.is_admin:
+            return "admin"
+        
+        elif self.is_employee:
+            return "empleado"
+        
+        else:
+            return "cliente"

@@ -10,3 +10,4 @@ proyecto/app/controllers/__pycache__/
 # Ignorar los archivos de bytecode de Python
 __pycache__/
 *.pyc
+*.env
