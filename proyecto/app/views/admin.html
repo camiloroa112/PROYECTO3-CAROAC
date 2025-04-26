@@ -54,6 +54,7 @@
                                 {% else %}
                                     <p class="material">Material: Plástico</p>
                                 {% endif %}
+                                <p>Costo Total: ${{ producto.costo_total }}</p>
                                 <p>Rentabilidad: ${{ producto.rentabilidad }}</p>
                                 <p>Ingredientes: </p>
                                 <ul class="lista-ingredientes">
@@ -77,6 +78,17 @@
                                     </ul>
                                 </ul>
                             </div>
+                            <form action="{{ url_for('home.vender_producto', producto_id = producto.id) }}" method="POST">
+                                <button type="submit" class="btn {{ 'btn-success' if current_user.is_admin or current_user.is_employee else 'btn-primary' }} w-100">
+                                    {{ 'Vender' if current_user.is_admin or current_user.is_employee else 'Comprar' }}
+                                </button>
+                                {# Mensaje de resultado #}
+                                {% if request.args.get('producto_id')|int == producto.id %}
+                                    <div class="alert alert-{{ request.args.get('tipo') }} text-center">
+                                        {{ request.args.get('mensaje') }}
+                                    </div>
+                                {% endif %}
+                            </form>
                         </div>
                     </div>
                 {% endfor %}

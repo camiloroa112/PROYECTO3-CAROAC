@@ -36,9 +36,10 @@ def create_app(config) -> Flask:
         user1 = Usuario(username = 'camilor123', password = 'Camilor123', is_admin = 1, is_employee = 0)
         user2 = Usuario(username = 'fulanitodetal1', password = 'Fulano123', is_admin = 0, is_employee = 1)
         user3 = Usuario(username = 'david99', password = 'David99', is_admin = 1, is_employee = 0)
+        user4 = Usuario(username = 'humbert', password = 'Humbert71', is_admin = 0, is_employee = 0)
         
         # Agregar usuarios a la base
-        db.session.add_all([user1, user2, user3])
+        db.session.add_all([user1, user2, user3, user4])
 
         # Guardar cambios
         db.session.commit()

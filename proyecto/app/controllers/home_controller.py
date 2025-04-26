@@ -2,8 +2,10 @@
 from app import views
 from app.config.db import db
 from app.models.usuario import Usuario
+from app.models.heladeria import Heladeria
 from app.models.productos import productos
 from app.models.ingredientes import ingredientes
+from app.models.obtener_producto import obtener_producto
 
 # 3rd Party Libraries
 from sqlalchemy import func
@@ -129,10 +131,36 @@ def obtener_productos(productos, ingredientes, db) -> list[tuple]:
         ingrediente1.nombre.label('ingrediente1'),
         ingrediente2.nombre.label('ingrediente2'),
         ingrediente3.nombre.label('ingrediente3'),
-        func.round(productos.precio_publico - (ingrediente1.precio + ingrediente2.precio + ingrediente3.precio), 2).label('rentabilidad')
+        func.round(productos.precio_publico - (ingrediente1.precio + ingrediente2.precio + ingrediente3.precio), 2).label('rentabilidad'),
+        func.round(ingrediente1.precio + ingrediente2.precio + ingrediente3.precio, 2).label('costo_total')
     ).join(ingrediente1, productos.ingrediente1_id == ingrediente1.id
     ).join(ingrediente2, productos.ingrediente2_id == ingrediente2.id
     ).join(ingrediente3, productos.ingrediente3_id == ingrediente3.id).all()
 
     # Retornando los ingredientes disponibles en inventario
     return productos_ingredientes
+
+@home_blueprint.route('/vender/<int:producto_id>', methods=['POST'])
+@login_required
+def vender_producto(producto_id):
+    # Obteniendo producto
+    producto, producto_obtenido = obtener_producto(producto_id)
+    
+    try:
+        heladeria = Heladeria([producto])
+        if heladeria.vender(producto_obtenido.nombre):
+            mensaje = f"¡{producto_obtenido.nombre} vendido con éxito!"
+            tipo_mensaje = 'success'
+        else:
+            mensaje = "No se pudo completar la venta"
+            tipo_mensaje = 'warning'
+    except ValueError as e:
+        mensaje = f"¡Oh no! {str(e)}"
+        tipo_mensaje = 'danger'
+    
+    # Redirección con parámetros de mensaje
+    redirect_url = url_for('home.admin' if current_user.is_admin else 
+                           'home.empleado' if current_user.is_employee else 
+                           'home.cliente')
+    
+    return redirect(f"{redirect_url}?mensaje={mensaje}&tipo={tipo_mensaje}&producto_id={producto_id}")

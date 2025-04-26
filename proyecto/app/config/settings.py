@@ -1,2 +1,2 @@
-user = ''
-password = ''
+user = 'caroac'
+password = 'AlphBetCamKin25#'
