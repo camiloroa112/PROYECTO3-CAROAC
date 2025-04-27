@@ -1,6 +1,3 @@
-# 1st Party Libraries
-from .settings import user, password
-
 # 3rd Party Libraries
 import os
 from dotenv import load_dotenv
