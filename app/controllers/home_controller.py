@@ -65,6 +65,7 @@ def login():
             return redirect(url_for('home.no_autorizado'))
 
 @home_blueprint.route('/logout')
+@login_required
 def logout():
     # Modulo para desloguear a un usuario
     logout_user()
