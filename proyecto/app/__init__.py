@@ -13,8 +13,6 @@ def create_app(config) -> Flask:
     
     # Instanciar Flask
     app = Flask(__name__, template_folder = 'views')
-
-    # 
     app.config.from_object(config)
 
     # Inicialización de la App

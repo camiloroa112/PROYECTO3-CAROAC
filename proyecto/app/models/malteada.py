@@ -4,6 +4,7 @@ from app.models.ingrediente import Ingrediente
 from app.models.funciones import calorias, costos, rentabilidad
 
 class Malteada(iProducto):
+    """Clase que crea las características que conforman a una malteada y brinda métodos de cálculo de calorias, costos, con sus respectivos setters y getters del objeto."""
     
     # 1. Constructor
     def __init__(self, nombre: str, precio_publico: float, ingrediente_1: Ingrediente, ingrediente_2: Ingrediente, ingrediente_3: Ingrediente, volumen: str) -> None:
@@ -41,24 +42,30 @@ class Malteada(iProducto):
     
     # 5. Función para obtener el nombre del producto
     def get_nombre(self) -> str:
+        """Retorna el nombre de una malteada."""
         return self._nombre
     
     # 6. Función para obtener el precio al público de la malteada
     def get_precio_publico(self) -> float:
+        """Retorna el precio publico de una malteada."""
         return self._precio_publico
     
     # 7. Función para obtener el vólumen
     def get_volumen(self) -> str:
+        """Retorna el volumen que posee una malteada."""
         return self._volumen
     
     # 8. Configurar nuevo nombre
     def set_nombre(self, nuevo_nombre: str) -> None:
+        """Genera un nuevo nombre a una malteada."""
         self._nombre = nuevo_nombre
 
     # 9. Función para obtener el nuevo precio al público de la malteada
     def set_precio_publico(self, nuevo_precio_publico: float) -> None:
+        """Genera un nuevo precio publico a una malteada."""
         self._precio_publico = nuevo_precio_publico
 
     # 10. Función para obtener el vólumen
     def set_volumen(self, nuevo_volumen) -> None:
+        """Establece un volumen nuevo a una malteada."""
         self._volumen = nuevo_volumen

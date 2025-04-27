@@ -3,6 +3,10 @@ from app.config.db import db
 
 # Class to create the Productos Model
 class productos(db.Model):
+    """Especifican los atributos que conforman el modelo en SQLAlchemy de: productos."""
+    
+    # Nombre de la tabla en Heladeria
+    __tablename__ = 'productos'
     # ID Product
     id = db.Column(db.Integer, primary_key = True) 
     # Product Name

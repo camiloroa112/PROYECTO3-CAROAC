@@ -2,6 +2,7 @@
 from app.models.ingrediente import Ingrediente
 
 class Complemento(Ingrediente):
+    """Clase que crea las características que conforman a los complementos de los productos que vende la heladeria y brinda métodos como abastecer y renovar inventario."""
     
     # 1. Constructor
     def __init__(self, precio: float, calorias: int, nombre: str, es_vegetariano: bool, inventario: int = 0) -> None:

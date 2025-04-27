@@ -1,19 +1,23 @@
 # 1st Party Libraries
 from app.config.db import db
 
-# Class to create the Ingredientes Model
+# Class para crear el modelo de ingrediente
 class ingredientes(db.Model):
-    # ID Ingredient
+    """Especifican los atributos que conforman el modelo en SQLAlchemy de: ingredientes."""
+    
+    # Nombre de la tabla en Heladeria
+    __tablename__ = 'ingredientes'
+    # ID Ingrediente
     id = db.Column(db.Integer, primary_key = True)
-    # Ingredient Name
+    # Nombre del ingrediente
     nombre = db.Column(db.String(50), nullable = False)
-    # Ingredient Price
+    # Precio del ingrediente
     precio = db.Column(db.Float, nullable = False)
-    # Ingredient Calories
+    # Calorias ingrediente
     calorias = db.Column(db.Integer, nullable = False)
-    # Ingredient Inventory
+    # Inventario ingrediente
     inventario = db.Column(db.Integer, nullable = False)
-    # Ingredient Boolean Value if its Vegetarian or not
+    # Valor booleano de un ingrediente conociendo si es vegetariano o no
     es_vegetariano = db.Column(db.Boolean, nullable = False)
-    # Flavour
+    # Sabor
     sabor = db.Column(db.String(10), nullable = True)

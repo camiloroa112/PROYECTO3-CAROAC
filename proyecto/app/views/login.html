@@ -31,7 +31,10 @@
                     <label for="password" class="pb-2">Contraseña</label>
                     <input type="password" class="form-control" id="password" placeholder="Ingrese su contraseña" name="password" required>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Ingresar</button>
+                <div class="form-control w-100 bg-info guest">
+                    <a href="{{ url_for('home.invitado') }}" class="text-decoration-none text-dark w-100 d-flex justify-content-center">Invitado</a>
+                </div>
             </form>
         </div>
     </section>

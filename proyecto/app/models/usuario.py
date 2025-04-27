@@ -5,21 +5,17 @@ from app.config.db import db
 from flask_login import UserMixin
 
 class Usuario(UserMixin, db.Model):
-    """Especifica los atributos que conforman el modelo de Usuario para dar inicio de sesión."""
-    __tablename__ = 'usuario'
-    id = db.Column(db.Integer, primary_key = True, nullable = False)
-    username = db.Column(db.String(255), nullable = False)
-    password = db.Column(db.String(255), nullable = False)
-    is_admin = db.Column(db.Integer, nullable = False)
-    is_employee = db.Column(db.Integer, nullable = False)
+    """Especifica los atributos que conforman el modelo en SQLAlchemy de: Usuario para dar inicio de sesión."""
 
-    @property
-    def rol(self):
-        if self.is_admin:
-            return "admin"
-        
-        elif self.is_employee:
-            return "empleado"
-        
-        else:
-            return "cliente"
+    # Nombre de la tabla en Heladeria
+    __tablename__ = 'usuario'
+    # Identificador unico del Usuario
+    id = db.Column(db.Integer, primary_key = True, nullable = False)
+    # Nombre del usuario
+    username = db.Column(db.String(255), nullable = False)
+    # Contraseña
+    password = db.Column(db.String(255), nullable = False)
+    # Atributo que asocia si es admin o no
+    is_admin = db.Column(db.Integer, nullable = False)
+    # Atributo que da a conocer si es empleado o no
+    is_employee = db.Column(db.Integer, nullable = False)

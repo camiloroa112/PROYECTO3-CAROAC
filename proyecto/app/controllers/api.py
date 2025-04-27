@@ -35,7 +35,6 @@ def obtener_productos():
 
 # Consultar producto por su ID
 @api.route('/api/productos/<int:producto_id>', methods = ['GET'])
-@login_required
 def obtener_producto_por_id(producto_id):
     
     # Obteniendo los productos por ID
@@ -46,7 +45,6 @@ def obtener_producto_por_id(producto_id):
 
 # Consultando producto por nombre del producto
 @api.route('/api/productos/nombre/<string:nombre>', methods = ['GET'])
-@login_required
 def obtener_producto_por_nombre(nombre):
     
     # Filtrando por el nombre
@@ -62,7 +60,6 @@ def obtener_producto_por_nombre(nombre):
     
 # Calcular calorias por ID Producto
 @api.route('/api/productos/<int:producto_id>/calorias', methods = ['GET'])
-@login_required
 def obtener_calorias(producto_id):
     
     # Obteniendo producto
@@ -174,12 +171,15 @@ def obtener_sano_por_id(ingrediente_id):
     # Obteniendo ingrediente por su nombre
     ingrediente = ingredientes.query.get(ingrediente_id)
     
+    # Instanciando la clase Ingrediente
+    ingrediente_ = Ingrediente(precio = ingrediente.precio, calorias = ingrediente.calorias, nombre = ingrediente.nombre, es_vegetariano = ingrediente.es_vegetariano, inventario = ingrediente.inventario)
+
     # Retornando mensaje de error en caso de busqueda no exitosa
     if ingrediente is None:
         return jsonify({'error': 'Ingrediente no encontrado'}), 404
     
     # Retornando JSON sobre el ingrediente
-    return jsonify({'ingrediente': ingrediente.nombre, 'es_sano': ingrediente.get_es_sano()}), 200
+    return jsonify({'ingrediente': ingrediente.nombre, 'es_sano': ingrediente_.get_es_sano()}), 200
 
 # Calcular rentabilidad por ID Producto
 @api.route('/api/productos/<int:producto_id>/reabastecer', methods = ['GET'])

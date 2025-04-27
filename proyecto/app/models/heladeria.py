@@ -9,6 +9,7 @@ from app.models.funciones import producto_rentable
 from typing import List, Union
 
 class Heladeria():
+    """Clase que depende de los productos disponibles e instanciados para darle vida a la heladería, brinda métodos de obtención del producto más rentable, vender, ventas del día y el listado de productos disponibles."""
     
     # 1. Constructor
     def __init__(self, productos: List[Union[Copa, Malteada]]) -> None:
@@ -72,7 +73,6 @@ class Heladeria():
         if producto_a_vender is None:
             return False
 
-        
         # Verificar si los ingredientes están disponibles
         ingredientes = [producto_a_vender._ingrediente_1, producto_a_vender._ingrediente_2, producto_a_vender._ingrediente_3]
         

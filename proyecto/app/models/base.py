@@ -2,6 +2,7 @@
 from app.models.ingrediente import Ingrediente
 
 class Base(Ingrediente):
+    """Clase que crea las características que conforman a las bases de los productos que vende la heladeria y brinda métodos como abastecer, con sus respectivos setters y getters del objeto."""
     
     #1. Constructor
     def __init__(self, precio: float, calorias: int, nombre: str, es_vegetariano: bool, sabor: str, inventario: int = 0) -> None:

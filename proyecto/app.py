@@ -1,7 +1,7 @@
 # 1st Party Libraries
 from app import create_app
-from app.config.config import Config
 from app.controllers.api import api
+from app.config.config import Config
 
 # Inicializar la configuracion de la app
 app = create_app(Config)

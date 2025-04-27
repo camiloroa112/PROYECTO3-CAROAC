@@ -8,7 +8,7 @@ from app.models.ingredientes import ingredientes
 from app.models.obtener_producto import obtener_producto
 
 # 3rd Party Libraries
-from sqlalchemy import func
+from sqlalchemy import func, case
 from sqlalchemy.orm import aliased
 from app.config.auth import login_manager
 from flask_login import login_user, logout_user, login_required, current_user
@@ -100,9 +100,16 @@ def cliente():
 
 @home_blueprint.route('/no-autorizado')
 def no_autorizado():
-    # Redirigiendo un usuario a una pagina de: No Autorizado
+    # Redirigiendo un usuario a la pagina de: No Autorizado
     return render_template('no_autorizado.html'), 401
 
+@home_blueprint.route('/invitado')
+def invitado():
+    # Trayendo resultados del controlador
+    productos_ingredientes = obtener_productos(productos, ingredientes, db)
+
+    # Redirigiendo un usuario a la pagina de: No Autorizado
+    return render_template('invitado.html', heladeria = productos_ingredientes)
 
 def obtener_productos(productos, ingredientes, db) -> list[tuple]:
     """Obtiene todos los productos con sus ingredientes de la base de datos."""
@@ -132,7 +139,14 @@ def obtener_productos(productos, ingredientes, db) -> list[tuple]:
         ingrediente2.nombre.label('ingrediente2'),
         ingrediente3.nombre.label('ingrediente3'),
         func.round(productos.precio_publico - (ingrediente1.precio + ingrediente2.precio + ingrediente3.precio), 2).label('rentabilidad'),
-        func.round(ingrediente1.precio + ingrediente2.precio + ingrediente3.precio, 2).label('costo_total')
+        func.round(ingrediente1.precio + ingrediente2.precio + ingrediente3.precio, 2).label('costo_total'),
+        case(
+            (func.substring_index(productos.nombre, ' ', 1) == 'Malteada', 
+             func.round(ingrediente1.calorias + ingrediente2.calorias + ingrediente3.calorias + 200, 2)),
+            (func.substring_index(productos.nombre, ' ', 1) == 'Copa', 
+             func.round((ingrediente1.calorias + ingrediente2.calorias + ingrediente3.calorias) * 0.95, 2)),
+            else_ = func.round(ingrediente1.calorias + ingrediente2.calorias + ingrediente3.calorias, 2)
+        ).label('calorias_totales')
     ).join(ingrediente1, productos.ingrediente1_id == ingrediente1.id
     ).join(ingrediente2, productos.ingrediente2_id == ingrediente2.id
     ).join(ingrediente3, productos.ingrediente3_id == ingrediente3.id).all()
@@ -140,27 +154,43 @@ def obtener_productos(productos, ingredientes, db) -> list[tuple]:
     # Retornando los ingredientes disponibles en inventario
     return productos_ingredientes
 
-@home_blueprint.route('/vender/<int:producto_id>', methods=['POST'])
+@home_blueprint.route('/vender/<int:producto_id>', methods = ['POST'])
 @login_required
 def vender_producto(producto_id):
     # Obteniendo producto
     producto, producto_obtenido = obtener_producto(producto_id)
-    
-    try:
-        heladeria = Heladeria([producto])
-        if heladeria.vender(producto_obtenido.nombre):
-            mensaje = f"¡{producto_obtenido.nombre} vendido con éxito!"
-            tipo_mensaje = 'success'
-        else:
-            mensaje = "No se pudo completar la venta"
-            tipo_mensaje = 'warning'
-    except ValueError as e:
-        mensaje = f"¡Oh no! {str(e)}"
-        tipo_mensaje = 'danger'
-    
-    # Redirección con parámetros de mensaje
-    redirect_url = url_for('home.admin' if current_user.is_admin else 
-                           'home.empleado' if current_user.is_employee else 
-                           'home.cliente')
-    
-    return redirect(f"{redirect_url}?mensaje={mensaje}&tipo={tipo_mensaje}&producto_id={producto_id}")
+    if current_user.is_admin or current_user.is_employee:
+        try:
+            heladeria = Heladeria([producto])
+            if heladeria.vender(producto_obtenido.nombre):
+                mensaje = f"¡{producto_obtenido.nombre} vendido con éxito!"
+                tipo_mensaje = 'success'
+            else:
+                mensaje = "No se pudo completar la venta"
+                tipo_mensaje = 'warning'
+        except ValueError as e:
+            mensaje = f"¡Oh no! {str(e)}"
+            tipo_mensaje = 'danger'
+        
+        # Redirección con parámetros de mensaje
+        redirect_url = url_for('home.admin' if current_user.is_admin else 'home.empleado' if current_user.is_employee else 'home.cliente')
+        
+        return redirect(f"{redirect_url}?mensaje={mensaje}&tipo={tipo_mensaje}&producto_id={producto_id}")
+
+    else:
+        try:
+            heladeria = Heladeria([producto])
+            if heladeria.vender(producto_obtenido.nombre):
+                mensaje = f"¡{producto_obtenido.nombre} comprado con éxito!"
+                tipo_mensaje = 'success'
+            else:
+                mensaje = "No se pudo completar la compra :("
+                tipo_mensaje = 'warning'
+        except ValueError as e:
+            mensaje = f"¡Oh no! {str(e)}"
+            tipo_mensaje = 'danger'
+        
+        # Redirección con parámetros de mensaje
+        redirect_url = url_for('home.admin' if current_user.is_admin else 'home.empleado' if current_user.is_employee else 'home.cliente')
+        
+        return redirect(f"{redirect_url}?mensaje={mensaje}&tipo={tipo_mensaje}&producto_id={producto_id}")
