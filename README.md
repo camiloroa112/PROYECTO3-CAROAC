@@ -65,8 +65,8 @@ python app.py
 ```
 
 > [!IMPORTANT]
-> En caso de errores con MySQL, cerciorese de que en el administrador de tareas, especificamente en Servicios solo se este ejecutando el servicio MySQL80 y no MySQL83.
-> Si dispone de otra base llamada heladeria, eliminela a fin de evitar cualquier conflicto con la visualización de la página.
-> Toda la información de los endpoints y los outputs de los mismos solamente se verá reflejado en Postman. Recuerde que para comenzar a testear las APIs, primero debe iniciar sesión con http://127.0.0.1:5500/api/login, seleccione el método POST y presione Send para continuar.
-> Si usted va a realizar algún ajuste en la API o en cualquiera, debe volver a iniciar sesión.
-> El programa contiene la información necesaria, documentada y con el paso a paso sobre ¿Cómo se llego a cada solución?
+> - En caso de errores con MySQL, cerciorese de que en el administrador de tareas, especificamente en Servicios solo se este ejecutando el servicio MySQL80 y no MySQL83.
+> - Si dispone de otra base llamada heladeria, eliminela a fin de evitar cualquier conflicto con la visualización de la página.
+> - Toda la información de los endpoints y los outputs de los mismos solamente se verá reflejado en Postman. Recuerde que para comenzar a testear las APIs, primero debe iniciar sesión con http://127.0.0.1:5500/api/login, seleccione el método POST y presione Send para continuar.
+> - Si usted va a realizar algún ajuste en la API o en cualquiera, debe volver a iniciar sesión.
+> - El programa contiene la información necesaria, documentada y con el paso a paso sobre ¿Cómo se llego a cada solución?
