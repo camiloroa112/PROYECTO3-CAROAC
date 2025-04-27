@@ -23,9 +23,11 @@ def load_user(user_id: str) -> Usuario:
     # Obtiene el ID de un Registro
     return Usuario.query.get(str(user_id))
 
+# API para permitir el logeo y uso de las demás APIs
 @api.route('/api/login', methods = ['POST'])
 def login():
-    # En caso de un método GET, presenta en un inicio la página de login en HTML
+    
+    # Colocación de un uusario admin
     _username = 'camilor123'
     _password = 'Camilor123'
 
