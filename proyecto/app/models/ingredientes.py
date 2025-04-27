@@ -21,3 +21,5 @@ class ingredientes(db.Model):
     es_vegetariano = db.Column(db.Boolean, nullable = False)
     # Sabor
     sabor = db.Column(db.String(10), nullable = True)
+    # Tipo
+    tipo = db.Column(db.String(11), nullable = False)

@@ -1,6 +1,7 @@
 # 1st Party Libraries
 from app.config.db import db
 from app.models.base import Base
+from app.models.usuario import Usuario
 from app.models.productos import productos
 from app.models.heladeria import Heladeria
 from app.models.complemento import Complemento
@@ -10,14 +11,45 @@ from app.models.obtener_producto import obtener_producto
 
 # 3rd Party Libraries
 from sqlalchemy.orm import aliased
-from flask import Blueprint, jsonify
-from flask_login import login_required
+from app.config.auth import login_manager
+from flask import Blueprint, request, jsonify
+from flask_login import login_required, login_user
 
 # Instanciando el Blueprint de la API
 api = Blueprint('api', __name__)
 
+@login_manager.user_loader
+def load_user(user_id: str) -> Usuario:
+    # Obtiene el ID de un Registro
+    return Usuario.query.get(str(user_id))
+
+@api.route('/api/login', methods = ['POST'])
+def login():
+    # En caso de un método GET, presenta en un inicio la página de login en HTML
+    _username = 'camilor123'
+    _password = 'Camilor123'
+
+    # Búsqueda de un usuario
+    user = Usuario.query.filter_by(username = _username, password = _password).first()
+
+    # En caso de que se encuentre el usuario
+    if user: 
+
+        # Se inicia sesión en la página
+        login_user(user)
+
+        # Inspecciona si este es admin o no
+        if user.is_admin:
+            login_user(user)
+            return jsonify({'message': 'Logged in successfully'})
+        
+        # Para un usuario sin credenciales validas
+        else:
+            return jsonify({'message': 'Invalid credentials'}), 401
+
 # Consultando todos los Productos
 @api.route('/api/productos', methods = ['GET'])
+@login_required
 def obtener_productos():
     
     # Consulta de los productos disponibles en la base
@@ -35,6 +67,7 @@ def obtener_productos():
 
 # Consultar producto por su ID
 @api.route('/api/productos/<int:producto_id>', methods = ['GET'])
+@login_required
 def obtener_producto_por_id(producto_id):
     
     # Obteniendo los productos por ID
@@ -45,6 +78,7 @@ def obtener_producto_por_id(producto_id):
 
 # Consultando producto por nombre del producto
 @api.route('/api/productos/nombre/<string:nombre>', methods = ['GET'])
+@login_required
 def obtener_producto_por_nombre(nombre):
     
     # Filtrando por el nombre
@@ -60,6 +94,7 @@ def obtener_producto_por_nombre(nombre):
     
 # Calcular calorias por ID Producto
 @api.route('/api/productos/<int:producto_id>/calorias', methods = ['GET'])
+@login_required
 def obtener_calorias(producto_id):
     
     # Obteniendo producto
@@ -73,6 +108,7 @@ def obtener_calorias(producto_id):
 
 # Calcular rentabilidad por ID Producto
 @api.route('/api/productos/<int:producto_id>/rentabilidad', methods = ['GET'])
+@login_required
 def obtener_rentabilidad(producto_id):
     
     # Obteniendo producto
@@ -86,6 +122,7 @@ def obtener_rentabilidad(producto_id):
 
 # Calcular costo por ID Producto
 @api.route('/api/productos/<int:producto_id>/costo_produccion', methods = ['GET'])
+@login_required
 def obtener_costo(producto_id):
     
     # Obteniendo producto
@@ -99,6 +136,7 @@ def obtener_costo(producto_id):
 
 # Vender un producto por su ID
 @api.route('/api/productos/vender/<int:producto_id>', methods = ['POST'])
+@login_required
 def vender_producto(producto_id):
     
     # Identificar producto por su ID
@@ -124,19 +162,21 @@ def vender_producto(producto_id):
     
 # Obteniendo todos los ingredientes
 @api.route('/api/ingredientes', methods = ['GET'])
+@login_required
 def obtener_todos_los_ingredientes():
     
     # Consultando todos los ingredientes disponibles en la base
     ingredientes_lista = ingredientes.query.all()
 
     # Introduciendo los ingredientes en una lista
-    ingredientes_serializados = [{'id': ingrediente.id, 'nombre': ingrediente.nombre, 'calorias': ingrediente.calorias, 'precio': ingrediente.precio} for ingrediente in ingredientes_lista]
+    ingredientes_serializados = [{'id': ingrediente.id, 'nombre': ingrediente.nombre, 'calorias': ingrediente.calorias, 'precio': ingrediente.precio, 'tipo_ingrediente': ingrediente.tipo} for ingrediente in ingredientes_lista]
     
     # Retornando la lista en un JSON
     return jsonify(ingredientes_serializados), 200
 
 # Obteniendo Ingrediente por su ID
 @api.route('/api/ingredientes/<int:ingrediente_id>', methods = ['GET'])
+@login_required
 def obtener_ingrediente_por_id(ingrediente_id):
     
     # Realizando búsqueda del ingrediente
@@ -148,10 +188,11 @@ def obtener_ingrediente_por_id(ingrediente_id):
     
     # Retornando JSON sobre el ingrediente
     else:
-        return jsonify({'id': ingrediente.id, 'nombre': ingrediente.nombre, 'calorias': ingrediente.calorias, 'precio': ingrediente.precio}), 200
+        return jsonify({'id': ingrediente.id, 'nombre': ingrediente.nombre, 'calorias': ingrediente.calorias, 'precio': ingrediente.precio, 'tipo_ingrediente': ingrediente.tipo}), 200
 
 # Obteniendo Ingrediente por su nombre
 @api.route('/api/ingredientes/nombre/<string:nombre>', methods = ['GET'])
+@login_required
 def obtener_ingrediente_por_nombre(nombre):
     
     # Obteniendo ingrediente por su nombre
@@ -162,10 +203,11 @@ def obtener_ingrediente_por_nombre(nombre):
         return jsonify({'error': 'Ingrediente no encontrado'}), 404
     
     # Retornando JSON sobre el ingrediente
-    return jsonify({'id': ingrediente.id, 'nombre': ingrediente.nombre, 'calorias': ingrediente.calorias, 'precio': ingrediente.precio}), 200
+    return jsonify({'id': ingrediente.id, 'nombre': ingrediente.nombre, 'calorias': ingrediente.calorias, 'precio': ingrediente.precio, 'tipo_ingrediente': ingrediente.tipo}), 200
 
 # Consultar si un ingrediente es sano segun su ID
 @api.route('/api/ingredientes/<int:ingrediente_id>/sano', methods = ['GET'])
+@login_required
 def obtener_sano_por_id(ingrediente_id):
     
     # Obteniendo ingrediente por su nombre
@@ -179,116 +221,153 @@ def obtener_sano_por_id(ingrediente_id):
         return jsonify({'error': 'Ingrediente no encontrado'}), 404
     
     # Retornando JSON sobre el ingrediente
-    return jsonify({'ingrediente': ingrediente.nombre, 'es_sano': ingrediente_.get_es_sano()}), 200
+    return jsonify({'ingrediente': ingrediente.nombre, 'es_sano': ingrediente_.get_es_sano(), 'tipo_ingrediente': ingrediente.tipo}), 200
 
-# Calcular rentabilidad por ID Producto
+# Reabastecer inventario por ID Producto
 @api.route('/api/productos/<int:producto_id>/reabastecer', methods = ['GET'])
-def reabastecer_producto(producto_id):
+@login_required
+def reabastecer_producto(producto_id: int):
     
-    # Creando alias para los tres diferentes ingredientes que conforman a un producto
-    i1_alias = aliased(ingredientes)
-    i2_alias = aliased(ingredientes)
-    i3_alias = aliased(ingredientes)
+    try:
+        # Crear alias para cada uno de los ingredientes
+        ingrediente1 = aliased(ingredientes)
+        ingrediente2 = aliased(ingredientes)
+        ingrediente3 = aliased(ingredientes)
 
-    # JOIN producto con ingredientes
-    resultado = db.session.query(productos, i1_alias, i2_alias, i3_alias
-    ).join(i1_alias, productos.ingrediente1_id == i1_alias.id).join(i2_alias, productos.ingrediente2_id == i2_alias.id
-    ).join(i3_alias, productos.ingrediente3_id == i3_alias.id).filter(productos.id == producto_id).first()
+        # Query que obtiene el producto y sus 3 ingredientes
+        resultado = db.session.query(
+            productos,
+            ingrediente1, 
+            ingrediente2, 
+            ingrediente3, 
+        ).join(ingrediente1, productos.ingrediente1_id == ingrediente1.id
+        ).join(ingrediente2, productos.ingrediente2_id == ingrediente2.id
+        ).join(ingrediente3, productos.ingrediente3_id == ingrediente3.id
+        ).filter(
+            productos.id == producto_id
+        ).first()
 
-    # En caso de que no se encuentre el resultado
-    if resultado is None:
-        return jsonify({'error': 'Producto no encontrado'}), 404
+        # En caso de no encontrarse el producto
+        if not resultado:
+            return jsonify({'error': 'Producto no encontrado'}), 404
 
-    # Extraer tupla de la consulta
-    producto_obtenido, ingrediente__1, ingrediente__2, ingrediente__3 = resultado
+        # Extraer tupla de la consulta
+        producto_obtenido, ingrediente1, ingrediente2, ingrediente3 = resultado
 
-    # Instanciar Ingredientes
-    ingrediente1 = Ingrediente(precio = ingrediente__1.precio, calorias = ingrediente__1.calorias, nombre = ingrediente__1.nombre, es_vegetariano = ingrediente__1.es_vegetariano, inventario = ingrediente__1.inventario)
-    ingrediente2 = Ingrediente(precio = ingrediente__2.precio, calorias = ingrediente__2.calorias, nombre = ingrediente__2.nombre, es_vegetariano = ingrediente__2.es_vegetariano, inventario = ingrediente__2.inventario)
-    ingrediente3 = Ingrediente(precio = ingrediente__3.precio, calorias = ingrediente__3.calorias, nombre = ingrediente__3.nombre, es_vegetariano = ingrediente__3.es_vegetariano, inventario = ingrediente__3.inventario)
+        # Lista para almacenar los resultados
+        ingredientes_actualizados = []
 
-    # Reabastecer los ingredientes de la copa o malteada
-    ingredientes = [ingrediente1, ingrediente2, ingrediente3]
-    
-    # Llamamos al método abastecer según sea un complemento o una base
-    for ingrediente in ingredientes:
-        if isinstance(ingrediente, Complemento):
-            ingrediente.abastecer()  # Reabastecer el complemento
-        elif isinstance(ingrediente, Base):
-            ingrediente.abastecer()  # Reabastecer la base
+        # Lista para almacenar los resultados
+        listado_ingredientes = [ingrediente1, ingrediente2, ingrediente3]
 
-    # Retornando JSON
-    return jsonify({'id': producto_obtenido.id, 
-                    'producto': producto_obtenido.nombre, 
-                    'ingredientes': [
-                                    {
-                                        'nombre': ingrediente1.get_nombre(),
-                                        'inventario': ingrediente1.get_inventario()
-                                    },
-                                    {
-                                        'nombre': ingrediente2.get_nombre(),
-                                        'inventario': ingrediente2.get_inventario()
-                                    },
-                                    {
-                                        'nombre': ingrediente3.get_nombre(),
-                                        'inventario': ingrediente3.get_inventario()
-                                    }
-                                    ],
-                    'mensaje': 'Producto reabastecido con éxito'}), 200
+        # Ingredientes que conforman al producto
+        for ingrediente in listado_ingredientes:
+            
+            # Determinar si es Base o Complemento por si tiene un sabor
+            if ingrediente.tipo == 'Base':
+                ingrediente_ = Base(precio = ingrediente.precio, calorias = ingrediente.calorias, nombre = ingrediente.nombre, es_vegetariano = ingrediente.es_vegetariano, sabor = ingrediente.sabor, inventario = ingrediente.inventario)
+                ingrediente_.abastecer()
 
-# Calcular rentabilidad por ID Producto
-@api.route('/api/productos/<int:producto_id>/renovar', methods = ['GET'])
+            # En caso contrario
+            else:  
+                ingrediente_ = Complemento(precio = ingrediente.precio, calorias = ingrediente.calorias, nombre = ingrediente.nombre, es_vegetariano = ingrediente.es_vegetariano, inventario = ingrediente.inventario)
+                ingrediente_.abastecer()
+            
+            # Actualizar el inventario en la base de datos
+            ingrediente.inventario = ingrediente_.get_inventario()
+            
+            # Actualización del JSON
+            ingredientes_actualizados.append({'nombre': ingrediente_.get_nombre(), 'inventario': ingrediente_.get_inventario(), 'tipo': ingrediente.tipo})
+
+        # Aplicacion de cambios en la BD
+        db.session.commit()
+
+        # Retornando JSON
+        return jsonify({'id': producto_obtenido.id, 
+                        'producto': producto_obtenido.nombre, 
+                        'ingredientes': ingredientes_actualizados, 
+                        'mensaje': 'Inventario renovado con éxito'}), 200
+
+    # Retorno de Error en caso de no exito
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error al reabastecer: {str(e)}'}), 500
+
+# Renovar inventario por ID Producto
+@api.route('/api/productos/<int:producto_id>/renovar', methods = ['POST'])
+@login_required
 def renovar_inventario(producto_id):
+    try:
+        # Crear alias para cada uno de los ingredientes
+        ingrediente1 = aliased(ingredientes)
+        ingrediente2 = aliased(ingredientes)
+        ingrediente3 = aliased(ingredientes)
+
+        # Query que obtiene el producto y sus 3 ingredientes
+        resultado = db.session.query(
+            productos,
+            ingrediente1, 
+            ingrediente2, 
+            ingrediente3, 
+        ).join(ingrediente1, productos.ingrediente1_id == ingrediente1.id
+        ).join(ingrediente2, productos.ingrediente2_id == ingrediente2.id
+        ).join(ingrediente3, productos.ingrediente3_id == ingrediente3.id
+        ).filter(
+            productos.id == producto_id
+        ).first()
+
+        # En caso de no encontrarse el producto
+        if not resultado:
+            return jsonify({'error': 'Producto no encontrado'}), 404
+
+        # Extraer tupla de la consulta
+        producto_obtenido, ingrediente1, ingrediente2, ingrediente3 = resultado
+        # Lista para almacenar los resultados
+        ingredientes_actualizados = []
+        # Lista para almacenar los resultados
+        listado_ingredientes = [ingrediente1, ingrediente2, ingrediente3]
+
+        # Ingredientes que conforman al producto
+        for ingrediente in listado_ingredientes:
+            # Almacenando inventario inicial
+            inventario_anterior = ingrediente.inventario
+            
+            # Corroborando si el tipo de ingrediente corresponde a una base
+            if ingrediente.tipo == 'Base':
+                # No hay instancia ya que no se renueva en las bases
+                accion = 'No requiere renovación'
+                # Se obtiene el inventario actual
+                inventario_actual = inventario_anterior
+            
+            # Para el caso de los complementos
+            else:
+                # Instanciando la clase complemento
+                complemento = Complemento(precio = ingrediente.precio, calorias = ingrediente.calorias, nombre = ingrediente.nombre, es_vegetariano = ingrediente.es_vegetariano, inventario = ingrediente.inventario)
+                # Renovación del inventario
+                complemento.renovar_inventario()
+                # Obtención del inventario después de su renovación
+                ingrediente.inventario = complemento.get_inventario()
+                # Comentario sobre la acción
+                accion = 'Renovado (inventario a 0)'
+                # Obteniendo inventario renovado
+                inventario_actual = ingrediente.inventario
+
+            # Comentario para ser colocado en un JSON
+            ingredientes_actualizados.append({
+                'nombre': ingrediente.nombre,
+                'inventario_anterior': inventario_anterior,
+                'inventario_actual': inventario_actual,
+                'tipo': ingrediente.tipo,
+                'accion': accion
+            })
+
+        # Guardar cambios
+        db.session.commit()
+
+        # Retornando JSON
+        return jsonify({'id': producto_obtenido.id, 'producto': producto_obtenido.nombre, 'ingredientes': ingredientes_actualizados, 'mensaje': 'Inventario de complementos renovado con éxito'}), 200
     
-    # Creando alias para los tres diferentes ingredientes que conforman a un producto
-    i1_alias = aliased(ingredientes)
-    i2_alias = aliased(ingredientes)
-    i3_alias = aliased(ingredientes)
-
-    # JOIN producto con ingredientes
-    resultado = db.session.query(productos, i1_alias, i2_alias, i3_alias
-    ).join(i1_alias, productos.ingrediente1_id == i1_alias.id).join(i2_alias, productos.ingrediente2_id == i2_alias.id
-    ).join(i3_alias, productos.ingrediente3_id == i3_alias.id).filter(productos.id == producto_id).first()
-
-    # En caso de que no se encuentre el resultado
-    if resultado is None:
-        return jsonify({'error': 'Producto no encontrado'}), 404
-
-    # Extraer tupla de la consulta
-    producto_obtenido, ingrediente__1, ingrediente__2, ingrediente__3 = resultado
-
-    # Instanciar Ingredientes
-    ingrediente1 = Ingrediente(precio = ingrediente__1.precio, calorias = ingrediente__1.calorias, nombre = ingrediente__1.nombre, es_vegetariano = ingrediente__1.es_vegetariano, inventario = ingrediente__1.inventario)
-    ingrediente2 = Ingrediente(precio = ingrediente__2.precio, calorias = ingrediente__2.calorias, nombre = ingrediente__2.nombre, es_vegetariano = ingrediente__2.es_vegetariano, inventario = ingrediente__2.inventario)
-    ingrediente3 = Ingrediente(precio = ingrediente__3.precio, calorias = ingrediente__3.calorias, nombre = ingrediente__3.nombre, es_vegetariano = ingrediente__3.es_vegetariano, inventario = ingrediente__3.inventario)
-
-    # Reabastecer los ingredientes de la copa o malteada
-    ingredientes = [ingrediente1, ingrediente2, ingrediente3]
-    
-    # Llamamos al método renovar según sea un complemento o una base
-    for ingrediente in ingredientes:
-        # Comprobando si el ingrediente es un Complemento
-        if isinstance(ingrediente, Complemento):
-            ingrediente.renovar_inventario()
-        # En caso de ser una base, esta seria no renovada
-        elif isinstance(ingrediente, Base):
-            continue
-
-    # Retornando JSON
-    return jsonify({'id': producto_obtenido.id, 
-                    'producto': producto_obtenido.nombre, 
-                    'ingredientes': [
-                                    {
-                                        'nombre': ingrediente1.get_nombre(),
-                                        'inventario': ingrediente1.get_inventario()
-                                    },
-                                    {
-                                        'nombre': ingrediente2.get_nombre(),
-                                        'inventario': ingrediente2.get_inventario()
-                                    },
-                                    {
-                                        'nombre': ingrediente3.get_nombre(),
-                                        'inventario': ingrediente3.get_inventario()
-                                    }
-                                    ],
-                    'mensaje': 'Inventario renovado con éxito'}), 200
+    # Mensaje de error al abastecer
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error al reabastecer: {str(e)}'}), 500

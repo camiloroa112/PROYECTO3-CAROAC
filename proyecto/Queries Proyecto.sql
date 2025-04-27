@@ -11,7 +11,8 @@ CREATE TABLE HELADERIA.INGREDIENTES
     CALORIAS INT NOT NULL,
     INVENTARIO  INT NOT NULL,
     ES_VEGETARIANO BOOLEAN NOT NULL,
-    SABOR CHAR(10) NULL
+    SABOR CHAR(10) NULL, 
+    TIPO CHAR(11) NOT NULL
 );
 
 -- Creacion Tabla Productos
@@ -31,24 +32,24 @@ CREATE TABLE HELADERIA.PRODUCTOS
 );
 
 -- Introduciedo Valores en Ingredientes
-INSERT INTO HELADERIA.INGREDIENTES(ID, NOMBRE, PRECIO, CALORIAS, INVENTARIO, ES_VEGETARIANO, SABOR)
+INSERT INTO HELADERIA.INGREDIENTES(ID, NOMBRE, PRECIO, CALORIAS, INVENTARIO, ES_VEGETARIANO, SABOR, TIPO)
 VALUES 
 	-- Copa de Caramelo
-	(1, 'Helado de Arequipe', 3300, 350, 10, FALSE, 'Arequipe'),
-    (2, 'Caramelo', 2500, 100, 10, FALSE, FALSE),
-    (3, 'Crema de Leche', 2500, 200, 10, TRUE, FALSE),
+	(1, 'Helado de Arequipe', 3300, 350, 10, FALSE, 'Arequipe', 'Base'),
+    (2, 'Caramelo', 2500, 100, 10, FALSE, FALSE, 'Complemento'),
+    (3, 'Crema de Leche', 2500, 200, 10, TRUE, FALSE, 'Complemento'),
     -- Malteada de Vainilla
-    (4, 'Helado de Vainilla', 3000, 150, 10, FALSE, 'Vainilla'),
-    (5, 'Extracto de Vainilla', 1800, 100, 10, FALSE, FALSE),
-    (6, 'Salsa de Chocolate', 2500, 120, 10, FALSE, FALSE),
+    (4, 'Helado de Vainilla', 3000, 150, 10, FALSE, 'Vainilla', 'Base'),
+    (5, 'Extracto de Vainilla', 1800, 100, 10, FALSE, FALSE, 'Complemento'),
+    (6, 'Salsa de Chocolate', 2500, 120, 10, FALSE, FALSE, 'Complemento'),
     -- Copa de Fresa
-    (7, 'Helado de Fresa', 3200, 120, 10, FALSE, 'Fresa'),
-    (8, 'Fresas', 2700, 100, 10, FALSE, FALSE),
-    (9, 'Leche Condensada', 2000, 150, 10, FALSE, FALSE),
+    (7, 'Helado de Fresa', 3200, 120, 10, FALSE, 'Fresa', 'Base'),
+    (8, 'Fresas', 2700, 100, 10, FALSE, FALSE, 'Complemento'),
+    (9, 'Leche Condensada', 2000, 150, 10, FALSE, FALSE, 'Complemento'),
     -- Malteada de Chocolate
-    (10, 'Helado de Chocolate', 3500, 160, 10, FALSE, 'Chocolate'),
-    (11, 'Leche Entera', 3000, 120, 10, TRUE, FALSE),
-    (12, 'Leche en Polvo', 2000, 100, 10, TRUE, FALSE)
+    (10, 'Helado de Chocolate', 3500, 160, 10, FALSE, 'Chocolate', 'Base'),
+    (11, 'Leche Entera', 3000, 120, 10, TRUE, FALSE, 'Complemento'),
+    (12, 'Leche en Polvo', 2000, 100, 10, TRUE, FALSE, 'Complemento')
 ;
 
 -- Introduciendo Valores en Productos
