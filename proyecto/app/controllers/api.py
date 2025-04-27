@@ -11,8 +11,8 @@ from app.models.obtener_producto import obtener_producto
 
 # 3rd Party Libraries
 from sqlalchemy.orm import aliased
+from flask import Blueprint, jsonify
 from app.config.auth import login_manager
-from flask import Blueprint, request, jsonify
 from flask_login import login_required, login_user
 
 # Instanciando el Blueprint de la API
