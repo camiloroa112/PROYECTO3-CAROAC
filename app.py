@@ -7,6 +7,10 @@ from app.config.config import Config
 app = create_app(Config)
 app.register_blueprint(api)
 
-# Ejecución del programa
+# Ejecución del programa en Railway
 if __name__ == '__main__':
     app.run(debug = True, host = '0.0.0.0', threaded = True)
+
+# Ejecución del programa en local
+# if __name__ == '__main__':
+#     app.run(debug = True, host = '127.0.0.1', port = 5500, threaded = True)

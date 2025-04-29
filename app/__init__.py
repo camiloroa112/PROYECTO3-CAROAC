@@ -30,6 +30,10 @@ def create_app(config) -> Flask:
         # Creación de bases de datos
         db.create_all()
 
+        # Limpiar tabla de usuarios
+        db.session.query(Usuario).delete()
+        db.session.commit()
+
         # # Instanciar usuarios
         # user1 = Usuario(username = 'camilor123', password = 'Camilor123', is_admin = 1, is_employee = 0)
         # user2 = Usuario(username = 'fulanitodetal1', password = 'Fulano123', is_admin = 0, is_employee = 1)

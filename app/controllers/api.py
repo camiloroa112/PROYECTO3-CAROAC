@@ -10,10 +10,15 @@ from app.models.ingredientes import ingredientes
 from app.models.obtener_producto import obtener_producto
 
 # 3rd Party Libraries
+import os
+from dotenv import load_dotenv
 from sqlalchemy.orm import aliased
 from flask import Blueprint, jsonify
 from app.config.auth import login_manager
 from flask_login import login_required, login_user
+
+# Cargar el .env
+load_dotenv(override = True)
 
 # Instanciando el Blueprint de la API
 api = Blueprint('api', __name__)
@@ -28,8 +33,8 @@ def load_user(user_id: str) -> Usuario:
 def login():
     
     # Colocación de un uusario admin
-    _username = 'camilor123'
-    _password = 'Camilor123'
+    _username = os.getenv('USERNAME', '').strip().replace("'", "").replace('"', '')
+    _password = os.getenv('PASSWORD', '').strip().replace("'", "").replace('"', '')
 
     # Búsqueda de un usuario
     user = Usuario.query.filter_by(username = _username, password = _password).first()
@@ -45,9 +50,13 @@ def login():
             login_user(user)
             return jsonify({'message': 'Logged in successfully'})
         
-        # Para un usuario sin credenciales validas
+        # Para usuarios no admin
         else:
-            return jsonify({'message': 'Invalid credentials'}), 401
+            return jsonify({'message': 'User is not admin'}), 403
+        
+    else:
+        # Si no se encontró el usuario
+        return jsonify({'message': 'Invalid credentials'}), 401
 
 # Consultando todos los Productos
 @api.route('/api/productos', methods = ['GET'])
