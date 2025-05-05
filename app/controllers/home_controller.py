@@ -56,9 +56,13 @@ def login():
                 return redirect(url_for('home.empleado'))
             
             # Para un usuario sin credenciales validas
-            else:
+            elif not user.is_admin and not user.is_employee:
                 return redirect(url_for('home.cliente'))
             
+            # Para un usuario sin credenciales validas
+            else:
+                return redirect(url_for('home.no_autorizado'))
+
         # Informe de credenciales incorrectas
         else:
             flash("Incorrect credentials!")
@@ -103,11 +107,18 @@ def empleado():
 @home_blueprint.route('/cliente')
 @login_required
 def cliente():
-    # Trayendo resultados del controlador
-    productos_ingredientes = obtener_productos(productos, ingredientes, db)
+    # En caso de que un usuario no sea admin o empleado
+    if not current_user.is_admin and current_user.is_employee:
 
-    # Redirección a usuarios no administradores del sitio web
-    return render_template('cliente.html', heladeria = productos_ingredientes, user = current_user)
+        # Trayendo resultados del controlador
+        productos_ingredientes = obtener_productos(productos, ingredientes, db)
+
+        # Redirección a usuarios no administradores del sitio web
+        return render_template('cliente.html', heladeria = productos_ingredientes, user = current_user)
+    
+    # En caso contrario
+    else:
+        return redirect(url_for('home.no_autorizado'))
 
 @home_blueprint.route('/no-autorizado')
 def no_autorizado():
