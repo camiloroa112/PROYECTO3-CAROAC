@@ -108,7 +108,7 @@ def empleado():
 @login_required
 def cliente():
     # En caso de que un usuario no sea admin o empleado
-    if not current_user.is_admin and current_user.is_employee:
+    if not current_user.is_admin and not current_user.is_employee:
 
         # Trayendo resultados del controlador
         productos_ingredientes = obtener_productos(productos, ingredientes, db)
