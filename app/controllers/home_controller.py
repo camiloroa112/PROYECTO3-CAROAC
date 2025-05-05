@@ -74,21 +74,31 @@ def logout():
 @home_blueprint.route('/admin')
 @login_required
 def admin():
+    # En caso de que el usuario no sea administrador
+    if not current_user.is_admin:
+        return redirect(url_for('home.no_autorizado'))
     
-    # Trayendo resultados del controlador
-    productos_ingredientes = obtener_productos(productos, ingredientes, db)
-    
-    # Displaying results in index.html
-    return render_template('admin.html', heladeria = productos_ingredientes, user = current_user)
+    # De lo contrario
+    else:
+        # Trayendo resultados del controlador
+        productos_ingredientes = obtener_productos(productos, ingredientes, db)
+        # Displaying results in index.html
+        return render_template('admin.html', heladeria = productos_ingredientes, user = current_user)
 
 @home_blueprint.route('/empleado')
 @login_required
 def empleado():
-    # Trayendo resultados del controlador
-    productos_ingredientes = obtener_productos(productos, ingredientes, db)
+    # En caso de que el usuario no sea administrador
+    if not current_user.is_employee:
+        return redirect(url_for('home.no_autorizado'))
+    
+    # De lo contrario
+    else:
+        # Trayendo resultados del controlador
+        productos_ingredientes = obtener_productos(productos, ingredientes, db)
 
-    # Redirección a usuarios no administradores del sitio web
-    return render_template('empleado.html', heladeria = productos_ingredientes, user = current_user)
+        # Redirección a usuarios no administradores del sitio web
+        return render_template('empleado.html', heladeria = productos_ingredientes, user = current_user)
 
 @home_blueprint.route('/cliente')
 @login_required
